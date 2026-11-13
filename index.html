@@ -1,0 +1,360 @@
+<html style="margin:0;padding:0;">
+<title>KK量化-八方来财</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root{
+    --bg0:#060a13; --bg1:#0c1424; --gold:#e8c879; --gold2:#f4ddaa;
+    --cyan:#5eead4; --up:#26d07c; --down:#f6465d; --ink:#e8eef7; --sub:#8b98ad; --line:rgba(255,255,255,.08);
+    --card:rgba(255,255,255,.045);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;padding:0;background:var(--bg0);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",sans-serif;}
+  #bg{position:fixed;inset:0;width:100%;height:100%;z-index:0;display:block;}
+  .veil{position:fixed;inset:0;z-index:1;background:radial-gradient(1200px 700px at 70% -10%,rgba(232,200,121,.10),transparent 60%),
+      radial-gradient(900px 600px at 10% 110%,rgba(94,234,212,.08),transparent 60%),linear-gradient(180deg,rgba(6,10,19,.55),rgba(6,10,19,.82));}
+  .wrap{position:relative;z-index:2;}
+
+  /* ---------- 登录 ---------- */
+  #login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .glass{width:100%;max-width:420px;padding:40px 34px 34px;border-radius:22px;
+    background:linear-gradient(160deg,rgba(255,255,255,.09),rgba(255,255,255,.03));
+    border:1px solid var(--line);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);
+    box-shadow:0 24px 70px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.08);}
+  .brand{display:flex;align-items:center;gap:12px;justify-content:center;margin-bottom:6px;}
+  .logo{width:42px;height:42px;border-radius:12px;display:grid;place-items:center;font-weight:800;font-size:20px;color:#0a0f1a;
+    background:linear-gradient(140deg,var(--gold2),var(--gold));box-shadow:0 6px 20px rgba(232,200,121,.35);}
+  .brand h1{font-size:23px;margin:0;letter-spacing:1px;
+    background:linear-gradient(90deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .sub{text-align:center;color:var(--sub);font-size:13px;margin:10px 0 28px;letter-spacing:3px;}
+  .field{position:relative;margin-bottom:14px;}
+  .field input{width:100%;padding:15px 16px;border-radius:13px;border:1px solid var(--line);
+    background:rgba(0,0,0,.25);color:var(--ink);font-size:15px;outline:none;transition:.2s;}
+  .field input:focus{border-color:rgba(232,200,121,.55);box-shadow:0 0 0 3px rgba(232,200,121,.12);}
+  .btn{width:100%;padding:15px;border:none;border-radius:13px;cursor:pointer;font-size:15px;font-weight:700;letter-spacing:2px;
+    color:#0a0f1a;background:linear-gradient(140deg,var(--gold2),var(--gold));box-shadow:0 10px 26px rgba(232,200,121,.28);transition:.2s;}
+  .btn:hover{transform:translateY(-1px);box-shadow:0 14px 32px rgba(232,200,121,.38);}
+  .btn:disabled{opacity:.6;cursor:not-allowed;transform:none;}
+  .err{color:var(--down);font-size:13px;min-height:18px;margin:12px 2px 0;text-align:center;}
+  .foot{margin-top:22px;text-align:center;color:var(--sub);font-size:11px;letter-spacing:1px;}
+
+  /* ---------- 看板 ---------- */
+  #app{display:none;max-width:1320px;margin:0 auto;padding:22px 20px 60px;}
+  .topbar{display:flex;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:22px;}
+  .topbar .t{font-size:20px;font-weight:800;letter-spacing:1px;
+    background:linear-gradient(90deg,var(--gold2),var(--gold));-webkit-background-clip:text;background-clip:text;color:transparent;}
+  .seg{display:inline-flex;padding:4px;border-radius:12px;background:rgba(255,255,255,.05);border:1px solid var(--line);}
+  .seg button{border:none;background:transparent;color:var(--sub);padding:7px 13px;border-radius:9px;cursor:pointer;font-size:13px;font-weight:600;}
+  .seg button.on{background:linear-gradient(140deg,var(--gold2),var(--gold));color:#0a0f1a;}
+  .meta{margin-left:auto;color:var(--sub);font-size:12px;}
+  .logout{border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--sub);padding:8px 14px;border-radius:10px;cursor:pointer;font-size:12px;}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(400px,1fr));gap:18px;}
+  .card{border-radius:18px;background:var(--card);border:1px solid var(--line);padding:18px;backdrop-filter:blur(12px);
+    -webkit-backdrop-filter:blur(12px);box-shadow:0 12px 40px rgba(0,0,0,.3);}
+  .ch{display:flex;align-items:flex-start;gap:10px;margin-bottom:14px;}
+  .av{width:40px;height:40px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;font-weight:800;font-size:16px;color:#0a0f1a;
+    background:linear-gradient(140deg,var(--cyan),#9af0e0);}
+  .ch .nm{font-size:16px;font-weight:700;}
+  .ch .st{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;}
+  .tag{font-size:11px;padding:3px 8px;border-radius:7px;background:rgba(94,234,212,.12);color:var(--cyan);border:1px solid rgba(94,234,212,.25);}
+  .tag.gold{background:rgba(232,200,121,.12);color:var(--gold);border-color:rgba(232,200,121,.3);}
+  .badge{font-size:11px;padding:3px 8px;border-radius:7px;background:rgba(232,200,121,.16);color:var(--gold2);border:1px solid rgba(232,200,121,.32);}
+
+  .kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px;}
+  .kpi{background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:12px;padding:10px 11px;}
+  .kpi .l{font-size:11px;color:var(--sub);display:flex;align-items:center;gap:4px;}
+  .kpi .v{font-size:16px;font-weight:700;margin-top:4px;}
+  .est{font-size:9px;color:var(--gold);border:1px solid rgba(232,200,121,.4);border-radius:4px;padding:0 3px;}
+  .pos{color:var(--up);}.neg{color:var(--down);}
+
+  .chartbar{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .mini-seg{display:inline-flex;border:1px solid var(--line);border-radius:9px;overflow:hidden;}
+  .mini-seg button{border:none;background:transparent;color:var(--sub);padding:5px 11px;font-size:12px;cursor:pointer;}
+  .mini-seg button.on{background:rgba(232,200,121,.18);color:var(--gold2);}
+  .mc{width:100%;height:150px;display:block;}
+  .more{margin-top:12px;}
+  .more>button{width:100%;border:1px solid var(--line);background:rgba(255,255,255,.04);color:var(--sub);
+    padding:9px;border-radius:10px;cursor:pointer;font-size:13px;}
+  .detail{display:none;margin-top:12px;}
+  .detail.open{display:block;}
+  .tabs{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap;}
+  .tabs button{border:1px solid var(--line);background:transparent;color:var(--sub);padding:6px 11px;border-radius:8px;font-size:12px;cursor:pointer;}
+  .tabs button.on{color:var(--gold2);border-color:rgba(232,200,121,.5);background:rgba(232,200,121,.1);}
+  .pane{display:none;max-height:260px;overflow:auto;border:1px solid var(--line);border-radius:11px;}
+  .pane.open{display:block;}
+  table{width:100%;border-collapse:collapse;font-size:12px;}
+  th,td{padding:8px 10px;text-align:left;white-space:nowrap;border-bottom:1px solid var(--line);}
+  th{position:sticky;top:0;background:#0d1626;color:var(--sub);font-weight:600;}
+  .empty{padding:22px;text-align:center;color:var(--sub);font-size:13px;}
+  .coins{display:flex;flex-wrap:wrap;gap:8px;padding:14px;}
+  .coin{font-size:12px;padding:6px 10px;border-radius:9px;background:rgba(0,0,0,.25);border:1px solid var(--line);}
+  .coin b{color:var(--gold2);}
+  .desc{font-size:12px;color:var(--sub);line-height:1.6;margin:0 0 12px;}
+  .ai{font-size:12px;color:var(--cyan);margin-bottom:12px;}
+
+  @media(max-width:560px){
+    #app{padding:16px 12px 50px;}
+    .grid{grid-template-columns:1fr;}
+    .kpis{grid-template-columns:repeat(3,1fr);gap:7px;}
+    .kpi .v{font-size:14px;}
+    .meta{width:100%;margin-left:0;}
+    .glass{padding:32px 24px 26px;}
+  }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="veil"></div>
+<div class="wrap">
+
+  <!-- 登录 -->
+  <div id="login">
+    <div class="glass">
+      <div class="brand">
+        <div class="logo">K</div>
+        <h1>KK量化-八方来财</h1>
+      </div>
+      <div class="sub">QUANT&nbsp;STRATEGY&nbsp;TERMINAL</div>
+      <div class="field"><input id="pw" type="password" placeholder="请输入访问密码" autocomplete="current-password"></div>
+      <button class="btn" id="go">进 入 看 板</button>
+      <div class="err" id="lerr"></div>
+      <div class="foot">数据每小时更新 · 仅供授权访问</div>
+    </div>
+  </div>
+
+  <!-- 看板 -->
+  <div id="app">
+    <div class="topbar">
+      <div class="t">KK量化-八方来财</div>
+      <div class="seg" id="rangeSeg"></div>
+      <button class="logout" id="logout">退出</button>
+      <div class="meta" id="updated"></div>
+    </div>
+    <div class="grid" id="cards"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+  var RANGES=['7D','30D','90D','180D','365D'];
+  var currentRange='30D';
+  var DATA=null, encRaw=null, expanded={}, chartMode={};
+
+  /* ---------- 工具 ---------- */
+  function te(s){return new TextEncoder().encode(s);}
+  function td(b){return new TextDecoder().decode(b);}
+  function b64ToBuf(b){var bin=atob(b),a=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)a[i]=bin.charCodeAt(i);return a;}
+  function el(tag,cls,html){var e=document.createElement(tag);if(cls)e.className=cls;if(html!=null)e.innerHTML=html;return e;}
+  function fmtDate(ts){if(!ts)return '-';var d=new Date(ts);function p(n){return (n<10?'0':'')+n;}
+    return (d.getMonth()+1)+'-'+p(d.getDate())+' '+p(d.getHours())+':'+p(d.getMinutes());}
+  function fmtNum(n,d){if(n==null)return '-';return Number(n).toLocaleString('en-US',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});}
+  function signed(n,d){if(n==null)return '-';var s=Number(n);return (s>0?'+':'')+fmtNum(s,d);}
+  function cls(n){return n>0?'pos':(n<0?'neg':'');}
+
+  /* ---------- 解密 ---------- */
+  async function decrypt(enc,password){
+    var base=await crypto.subtle.importKey('raw',te(password),'PBKDF2',false,['deriveKey']);
+    var key=await crypto.subtle.deriveKey(
+      {name:'PBKDF2',salt:b64ToBuf(enc.salt),iterations:enc.iter,hash:'SHA-256'},
+      base,{name:'AES-GCM',length:256},false,['decrypt']);
+    var plain=await crypto.subtle.decrypt({name:'AES-GCM',iv:b64ToBuf(enc.iv)},key,b64ToBuf(enc.data));
+    return JSON.parse(td(plain));
+  }
+
+  /* ---------- 背景动态 K 线 ---------- */
+  function setupBg(){
+    var cv=document.getElementById('bg'),ctx=cv.getContext('2d'),W,H,DPR;
+    function resize(){DPR=Math.min(window.devicePixelRatio||1,2);W=window.innerWidth;H=window.innerHeight;
+      cv.width=W*DPR;cv.height=H*DPR;cv.style.width=W+'px';cv.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0);}
+    resize();window.addEventListener('resize',resize);
+    var price=100,candles=[];
+    function gen(){var o=price,ch=(Math.random()-0.475)*7,c=Math.max(8,o+ch),
+      h=Math.max(o,c)+Math.random()*3.5,l=Math.min(o,c)-Math.random()*3.5;price=c;return {o:o,c:c,h:h,l:l};}
+    for(var i=0;i<72;i++)candles.push(gen());
+    var off=0,phase=0;
+    function draw(ts){
+      ctx.clearRect(0,0,W,H);
+      var cw=Math.max(9,W/62),nShow=Math.ceil(W/cw)+2,start=Math.max(0,candles.length-nShow);
+      off+=0.22;
+      if(off>=cw){off=0;candles.push(gen());if(candles.length>90)candles.shift();}
+      for(var i=start;i<candles.length;i++){
+        var c=candles[i],idx=i-start,x=W-(idx+1)*cw+cw/2-off,up=c.c>=c.o;
+        var col=up?'rgba(38,208,124,':'rgba(246,70,93,';
+        ctx.strokeStyle=col+'0.45)';ctx.lineWidth=1;
+        ctx.beginPath();ctx.moveTo(x,c.l);ctx.lineTo(x,c.h);ctx.stroke();
+        ctx.fillStyle=col+'0.30)';
+        var top=Math.min(c.o,c.c),bh=Math.max(2,Math.abs(c.c-c.o));
+        ctx.fillRect(x-cw*0.32,top,cw*0.64,bh);
+      }
+      // 金色流动曲线（正弦 + 扰动）
+      phase+=0.012;
+      ctx.beginPath();
+      for(var x2=0;x2<=W;x2+=8){
+        var y2=H*0.5+Math.sin(x2*0.006+phase)*H*0.16+Math.sin(x2*0.017+phase*1.7)*H*0.05;
+        x2===0?ctx.moveTo(x2,y2):ctx.lineTo(x2,y2);
+      }
+      ctx.strokeStyle='rgba(232,200,121,0.35)';ctx.lineWidth=1.4;
+      ctx.shadowColor='rgba(232,200,121,.5)';ctx.shadowBlur=14;ctx.stroke();ctx.shadowBlur=0;
+      requestAnimationFrame(draw);
+    }
+    requestAnimationFrame(draw);
+  }
+
+  /* ---------- 迷你面积图 ---------- */
+  function drawMini(cv,points,color){
+    var dpr=Math.min(window.devicePixelRatio||1,2),w=cv.clientWidth,h=cv.clientHeight;
+    cv.width=w*dpr;cv.height=h*dpr;var ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);
+    ctx.clearRect(0,0,w,h);if(!points.length)return;
+    var vals=points.map(function(p){return p.v==null?0:p.v;});
+    var min=Math.min.apply(null,vals),max=Math.max.apply(null,vals),pad=8,rg=(max-min)||1;
+    var X=function(i){return pad+i*(w-2*pad)/(points.length-1||1);};
+    var Y=function(v){return h-pad-(v-min)/rg*(h-2*pad);};
+    var g=ctx.createLinearGradient(0,0,0,h);g.addColorStop(0,color+'40');g.addColorStop(1,color+'00');
+    ctx.beginPath();ctx.moveTo(X(0),h);
+    vals.forEach(function(v,i){ctx.lineTo(X(i),Y(v));});ctx.lineTo(X(vals.length-1),h);ctx.closePath();
+    ctx.fillStyle=g;ctx.fill();
+    ctx.beginPath();vals.forEach(function(v,i){i?ctx.lineTo(X(i),Y(v)):ctx.moveTo(X(i),Y(v));});
+    ctx.strokeStyle=color;ctx.lineWidth=1.8;ctx.stroke();
+    var li=vals.length-1;ctx.beginPath();ctx.arc(X(li),Y(vals[li]),3,0,7);ctx.fillStyle=color;ctx.fill();
+  }
+
+  /* ---------- 看板渲染 ---------- */
+  function buildRangeSeg(){
+    var seg=document.getElementById('rangeSeg');seg.innerHTML='';
+    RANGES.forEach(function(r){
+      var b=el('button',r===currentRange?'on':null,r);
+      b.onclick=function(){currentRange=r;syncRangeSeg();renderCards();};
+      seg.appendChild(b);
+    });
+  }
+  function syncRangeSeg(){var bs=document.getElementById('rangeSeg').children;
+    for(var i=0;i<bs.length;i++)bs[i].className=bs[i].textContent===currentRange?'on':'';}
+
+  function kpi(l,v,c,est){
+    return '<div class="kpi"><div class="l">'+l+(est?' <span class="est">近似</span>':'')+
+      '</div><div class="v '+(c||'')+'">'+v+'</div></div>';
+  }
+  function tableHtml(rows,cols){
+    var h='<table><thead><tr>'+cols.map(function(c){return '<th>'+c.h+'</th>';}).join('')+'</tr></thead><tbody>';
+    h+=rows.map(function(r){return '<tr>'+cols.map(function(c){
+      var val=c.f(r);return '<td class="'+(c.color?c.color(r):'')+'">'+val+'</td>';}).join('')+'</tr>';}).join('');
+    return h+'</tbody></table>';
+  }
+
+  function renderCard(s){
+    var m=s.metrics[currentRange],card=el('div','card');
+    var head='<div class="ch"><div class="av">'+s.name.charAt(0)+'</div><div style="flex:1"><div class="nm">'+s.name+'</div>'+
+      '<div class="st">'+(s.badge?'<span class="badge">'+s.badge+'</span>':'')+
+      s.tags.map(function(t){return '<span class="tag gold">'+t+'</span>';}).join('')+
+      s.riskTags.map(function(t){return '<span class="tag">'+t+'</span>';}).join('')+'</div></div></div>';
+    var desc=(s.aiSummary?'<div class="ai">AI 画像：'+s.aiSummary+'</div>':'');
+    var kpis='<div class="kpis">'+
+      kpi('收益率',signed(m.roi,2)+'%',cls(m.roi))+
+      kpi('盈亏',signed(m.pnl,2),cls(m.pnl))+
+      kpi('夏普',fmtNum(s.sharpRatio,2))+
+      kpi('最大回撤',fmtNum(m.maxDrawdown,2)+'%','neg',true)+
+      kpi('胜率',m.winRate==null?'-':m.winRate+'%',null,true)+
+      kpi('总仓位',m.trades)+'</div>';
+    var mode=chartMode[s.id]||'ROI';
+    var chart='<div class="chartbar"><div class="mini-seg">'+
+      ['ROI','PNL'].map(function(tt){return '<button data-tt="'+tt+'" class="'+(tt===mode?'on':'')+'">'+(tt==='ROI'?'收益率':'盈亏')+'</button>';}).join('')+
+      '</div></div><canvas class="mc"></canvas>';
+    var more='<div class="more"><button class="mb">'+(expanded[s.id]?'收起详情 ▲':'查看详情 ▼')+'</button>'+
+      '<div class="detail'+(expanded[s.id]?' open':'')+'">'+detailTabs(s)+'</div></div>';
+    card.innerHTML=head+desc+kpis+chart+more;
+
+    var cv=card.querySelector('.mc');
+    var pts=mode==='ROI'?s.curves[currentRange].roi:s.curves[currentRange].pnl;
+    var col=mode==='ROI'?'#5eead4':'#e8c879';
+    requestAnimationFrame(function(){drawMini(cv,pts,col);});
+    card.querySelectorAll('.mini-seg button').forEach(function(b){
+      b.onclick=function(){chartMode[s.id]=b.getAttribute('data-tt');renderCards();};
+    });
+    card.querySelector('.mb').onclick=function(){expanded[s.id]=!expanded[s.id];renderCards();};
+    card.querySelectorAll('.tabs button').forEach(function(b){
+      b.onclick=function(){
+        var d=card.querySelector('.detail');
+        d.querySelectorAll('.tabs button').forEach(function(x){x.className=x===b?'on':'';});
+        d.querySelectorAll('.pane').forEach(function(x){x.className='pane'+(x.getAttribute('data-p')===b.getAttribute('data-p')?' open':'');});
+      };
+    });
+    return card;
+  }
+
+  function detailTabs(s){
+    var tabs=[{p:'pos',h:'当前持仓'},{p:'hist',h:'历史仓位'},{p:'ord',h:'订单'},{p:'coin',h:'币种表现'}];
+    var html='<div class="tabs">'+tabs.map(function(t,i){return '<button data-p="'+t.p+'" class="'+(i===0?'on':'')+'">'+t.h+'</button>';}).join('')+'</div>';
+    var posPane=el('div','pane open');posPane.setAttribute('data-p','pos');
+    if(!s.openPositions.length){posPane.innerHTML='<div class="empty">当前持仓不可见（第二阶段反推）或暂无持仓</div>';}
+    else{posPane.innerHTML=tableHtml(s.openPositions,[
+      {h:'币种',f:function(r){return r.symbol;}},
+      {h:'方向',f:function(r){return r.side;},color:function(r){return r.side==='LONG'?'pos':'neg';}},
+      {h:'数量',f:function(r){return fmtNum(r.amount,3);}},
+      {h:'开仓价',f:function(r){return fmtNum(r.entry,3);}},
+      {h:'标记价',f:function(r){return fmtNum(r.mark,3);}},
+      {h:'杠杆',f:function(r){return r.leverage+'x';}},
+      {h:'未实现盈亏',f:function(r){return signed(r.unrealizedPnl,2);},color:function(r){return cls(r.unrealizedPnl);}}
+    ]);}
+    var histPane=el('div','pane');histPane.setAttribute('data-p','hist');
+    histPane.innerHTML=tableHtml(s.history.slice().reverse(),[
+      {h:'币种',f:function(r){return r.symbol;}},
+      {h:'方向',f:function(r){return r.side;},color:function(r){return r.side==='Long'?'pos':'neg';}},
+      {h:'开仓',f:function(r){return fmtDate(r.opened);}},
+      {h:'平仓',f:function(r){return fmtDate(r.closed);}},
+      {h:'盈亏',f:function(r){return signed(r.pnl,2);},color:function(r){return cls(r.pnl);}},
+      {h:'ROI',f:function(r){return r.roi==null?'-':signed(r.roi,2)+'%';},color:function(r){return cls(r.roi);}},
+      {h:'杠杆',f:function(r){return r.leverage+'x';}}
+    ]);
+    var ordPane=el('div','pane');ordPane.setAttribute('data-p','ord');
+    ordPane.innerHTML=tableHtml(s.orders.slice().reverse(),[
+      {h:'时间',f:function(r){return fmtDate(r.time);}},
+      {h:'币种',f:function(r){return r.symbol;}},
+      {h:'类型',f:function(r){return r.type;}},
+      {h:'方向',f:function(r){return r.side;},color:function(r){return r.side==='BUY'?'pos':'neg';}},
+      {h:'数量',f:function(r){return fmtNum(r.qty,3);}},
+      {h:'价格',f:function(r){return fmtNum(r.price,4);}},
+      {h:'盈亏',f:function(r){return signed(r.pnl,2);},color:function(r){return cls(r.pnl);}}
+    ]);
+    var coinPane=el('div','pane');coinPane.setAttribute('data-p','coin');
+    coinPane.innerHTML='<div class="coins">'+(s.coinPerformance.length?s.coinPerformance.map(function(c){
+      return '<span class="coin">'+c.asset+' <b>'+fmtNum(c.volume,2)+'%</b></span>';}).join(''):'<div class="empty">暂无数据</div>')+'</div>';
+    return html+posPane.outerHTML+histPane.outerHTML+ordPane.outerHTML+coinPane.outerHTML;
+  }
+
+  function renderCards(){
+    var box=document.getElementById('cards');box.innerHTML='';
+    DATA.strategies.forEach(function(s){box.appendChild(renderCard(s));});
+  }
+  function enterApp(){
+    document.getElementById('login').style.display='none';
+    document.getElementById('app').style.display='block';
+    document.getElementById('updated').textContent='更新于 '+fmtDate(DATA.generatedAt);
+    buildRangeSeg();renderCards();
+  }
+
+  /* ---------- 登录流程 ---------- */
+  async function tryLogin(){
+    var pw=document.getElementById('pw').value,err=document.getElementById('lerr'),btn=document.getElementById('go');
+    if(!pw){err.textContent='请输入密码';return;}
+    btn.disabled=true;err.textContent='验证中…';
+    try{
+      if(!encRaw)encRaw=await fetch('data.enc').then(function(r){return r.json();});
+      DATA=await decrypt(encRaw,pw);
+      sessionStorage.setItem('kk_ok','1');
+      enterApp();
+    }catch(e){err.textContent='密码错误或数据已更新，请重试';btn.disabled=false;}
+  }
+
+  document.getElementById('go').onclick=tryLogin;
+  document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')tryLogin();});
+  document.getElementById('logout').onclick=function(){sessionStorage.removeItem('kk_ok');location.reload();};
+
+  setupBg();
+  fetch('data.enc').then(function(r){return r.json();}).then(function(j){encRaw=j;}).catch(function(){});
+})();
+</script>
+</body>
+</html>
