@@ -141,7 +141,7 @@
   'use strict';
   var RANGES=['7D','30D','90D','180D','365D'];
   var currentRange='30D';
-  var DATA=null, encRaw=null, expanded={}, chartMode={};
+  var DATA=null, encRaw=null, chartMode={};
 
   /* ---------- 工具 ---------- */
   function te(s){return new TextEncoder().encode(s);}
@@ -255,15 +255,14 @@
       kpi('收益率',signed(m.roi,2)+'%',cls(m.roi))+
       kpi('盈亏',signed(m.pnl,2),cls(m.pnl))+
       kpi('夏普',fmtNum(s.sharpRatio,2))+
-      kpi('最大回撤',fmtNum(m.maxDrawdown,2)+'%','neg',true)+
+      kpi('最大回撤',fmtNum(m.maxDrawdown,2)+'%',null,true)+
       kpi('胜率',m.winRate==null?'-':m.winRate+'%',null,true)+
       kpi('总仓位',m.trades)+'</div>';
     var mode=chartMode[s.id]||'ROI';
     var chart='<div class="chartbar"><div class="mini-seg">'+
       ['ROI','PNL'].map(function(tt){return '<button data-tt="'+tt+'" class="'+(tt===mode?'on':'')+'">'+(tt==='ROI'?'收益率':'盈亏')+'</button>';}).join('')+
       '</div></div><canvas class="mc"></canvas>';
-    var more='<div class="more"><button class="mb">'+(expanded[s.id]?'收起详情 ▲':'查看详情 ▼')+'</button>'+
-      '<div class="detail'+(expanded[s.id]?' open':'')+'">'+detailTabs(s)+'</div></div>';
+    var more='<div class="more"><button class="mb">查看详情 →</button></div>';
     card.innerHTML=head+desc+kpis+chart+more;
 
     var cv=card.querySelector('.mc');
@@ -273,55 +272,11 @@
     card.querySelectorAll('.mini-seg button').forEach(function(b){
       b.onclick=function(){chartMode[s.id]=b.getAttribute('data-tt');renderCards();};
     });
-    card.querySelector('.mb').onclick=function(){expanded[s.id]=!expanded[s.id];renderCards();};
-    card.querySelectorAll('.tabs button').forEach(function(b){
-      b.onclick=function(){
-        var d=card.querySelector('.detail');
-        d.querySelectorAll('.tabs button').forEach(function(x){x.className=x===b?'on':'';});
-        d.querySelectorAll('.pane').forEach(function(x){x.className='pane'+(x.getAttribute('data-p')===b.getAttribute('data-p')?' open':'');});
-      };
-    });
+    card.querySelector('.mb').onclick=function(){
+      try{sessionStorage.setItem('kk_data',JSON.stringify(DATA));}catch(e){}
+      window.open('detail.html?id='+encodeURIComponent(s.id),'_blank');
+    };
     return card;
-  }
-
-  function detailTabs(s){
-    var tabs=[{p:'pos',h:'当前持仓'},{p:'hist',h:'历史仓位'},{p:'ord',h:'订单'},{p:'coin',h:'币种表现'}];
-    var html='<div class="tabs">'+tabs.map(function(t,i){return '<button data-p="'+t.p+'" class="'+(i===0?'on':'')+'">'+t.h+'</button>';}).join('')+'</div>';
-    var posPane=el('div','pane open');posPane.setAttribute('data-p','pos');
-    if(!s.openPositions.length){posPane.innerHTML='<div class="empty">当前持仓不可见（第二阶段反推）或暂无持仓</div>';}
-    else{posPane.innerHTML=tableHtml(s.openPositions,[
-      {h:'币种',f:function(r){return r.symbol;}},
-      {h:'方向',f:function(r){return r.side;},color:function(r){return r.side==='LONG'?'pos':'neg';}},
-      {h:'数量',f:function(r){return fmtNum(r.amount,3);}},
-      {h:'开仓价',f:function(r){return fmtNum(r.entry,3);}},
-      {h:'标记价',f:function(r){return fmtNum(r.mark,3);}},
-      {h:'杠杆',f:function(r){return r.leverage+'x';}},
-      {h:'未实现盈亏',f:function(r){return signed(r.unrealizedPnl,2);},color:function(r){return cls(r.unrealizedPnl);}}
-    ]);}
-    var histPane=el('div','pane');histPane.setAttribute('data-p','hist');
-    histPane.innerHTML=tableHtml(s.history.slice().reverse(),[
-      {h:'币种',f:function(r){return r.symbol;}},
-      {h:'方向',f:function(r){return r.side;},color:function(r){return r.side==='Long'?'pos':'neg';}},
-      {h:'开仓',f:function(r){return fmtDate(r.opened);}},
-      {h:'平仓',f:function(r){return fmtDate(r.closed);}},
-      {h:'盈亏',f:function(r){return signed(r.pnl,2);},color:function(r){return cls(r.pnl);}},
-      {h:'ROI',f:function(r){return r.roi==null?'-':signed(r.roi,2)+'%';},color:function(r){return cls(r.roi);}},
-      {h:'杠杆',f:function(r){return r.leverage+'x';}}
-    ]);
-    var ordPane=el('div','pane');ordPane.setAttribute('data-p','ord');
-    ordPane.innerHTML=tableHtml(s.orders.slice().reverse(),[
-      {h:'时间',f:function(r){return fmtDate(r.time);}},
-      {h:'币种',f:function(r){return r.symbol;}},
-      {h:'类型',f:function(r){return r.type;}},
-      {h:'方向',f:function(r){return r.side;},color:function(r){return r.side==='BUY'?'pos':'neg';}},
-      {h:'数量',f:function(r){return fmtNum(r.qty,3);}},
-      {h:'价格',f:function(r){return fmtNum(r.price,4);}},
-      {h:'盈亏',f:function(r){return signed(r.pnl,2);},color:function(r){return cls(r.pnl);}}
-    ]);
-    var coinPane=el('div','pane');coinPane.setAttribute('data-p','coin');
-    coinPane.innerHTML='<div class="coins">'+(s.coinPerformance.length?s.coinPerformance.map(function(c){
-      return '<span class="coin">'+c.asset+' <b>'+fmtNum(c.volume,2)+'%</b></span>';}).join(''):'<div class="empty">暂无数据</div>')+'</div>';
-    return html+posPane.outerHTML+histPane.outerHTML+ordPane.outerHTML+coinPane.outerHTML;
   }
 
   function renderCards(){
@@ -344,13 +299,15 @@
       if(!encRaw)encRaw=await fetch('data.enc').then(function(r){return r.json();});
       DATA=await decrypt(encRaw,pw);
       sessionStorage.setItem('kk_ok','1');
+      try{sessionStorage.setItem('kk_data',JSON.stringify(DATA));}catch(e){}
       enterApp();
     }catch(e){err.textContent='密码错误或数据已更新，请重试';btn.disabled=false;}
   }
 
   document.getElementById('go').onclick=tryLogin;
   document.getElementById('pw').addEventListener('keydown',function(e){if(e.key==='Enter')tryLogin();});
-  document.getElementById('logout').onclick=function(){sessionStorage.removeItem('kk_ok');location.reload();};
+  document.getElementById('logout').onclick=function(){
+    sessionStorage.removeItem('kk_ok');sessionStorage.removeItem('kk_data');location.reload();};
 
   setupBg();
   fetch('data.enc').then(function(r){return r.json();}).then(function(j){encRaw=j;}).catch(function(){});
